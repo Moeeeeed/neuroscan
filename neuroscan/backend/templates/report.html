@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NeuroScan Diagnostic Report</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            color: #333;
+            margin: 0;
+            padding: 40px;
+            line-height: 1.6;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #3b82f6;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #1e3a8a;
+            margin: 0;
+            font-size: 28px;
+        }
+        .header p {
+            color: #64748b;
+            margin: 5px 0 0 0;
+            font-size: 14px;
+        }
+        .patient-info {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .patient-info table {
+            width: 100%;
+        }
+        .patient-info td {
+            padding: 5px 0;
+            font-size: 14px;
+        }
+        .patient-info td strong {
+            color: #475569;
+            width: 150px;
+            display: inline-block;
+        }
+        .diagnosis-box {
+            background-color: {{ '#fee2e2' if is_tumor else '#d1fae5' }};
+            border: 1px solid {{ '#ef4444' if is_tumor else '#10b981' }};
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .diagnosis-box h2 {
+            margin: 0 0 10px 0;
+            color: {{ '#b91c1c' if is_tumor else '#047857' }};
+        }
+        .diagnosis-box .confidence {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .images-section {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        .image-container {
+            width: 48%;
+            text-align: center;
+        }
+        .image-container img {
+            width: 100%;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+        }
+        .image-container p {
+            font-weight: bold;
+            color: #475569;
+            margin-top: 10px;
+        }
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 12px;
+            color: #94a3b8;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>NeuroScan AI</h1>
+        <p>Explainable Deep Learning for Brain Tumor Classification</p>
+    </div>
+
+    <div class="patient-info">
+        <table>
+            <tr>
+                <td><strong>Report ID:</strong> {{ report_id }}</td>
+                <td><strong>Date Generated:</strong> {{ date }}</td>
+            </tr>
+            <tr>
+                <td><strong>Patient ID:</strong> {{ patient_details.get('id', 'Anonymous') }}</td>
+                <td><strong>Patient Name:</strong> {{ patient_details.get('name', 'N/A') }}</td>
+            </tr>
+            <tr>
+                <td><strong>Age:</strong> {{ patient_details.get('age', 'N/A') }}</td>
+                <td><strong>Gender:</strong> {{ patient_details.get('gender', 'N/A') }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="diagnosis-box">
+        <h2>Primary Finding: {{ diagnosis }}</h2>
+        <div class="confidence">AI Confidence Score: {{ confidence }}%</div>
+        <p style="margin-top: 10px; font-size: 14px; color: #475569;">
+            {% if is_tumor %}
+                The AI model has detected anomalous tissue indicating a high probability of {{ diagnosis }}. Please review the XAI Grad-CAM localization below for surgical planning or further diagnostic verification.
+            {% else %}
+                The AI model did not detect any anomalous tissue. The scan appears normal based on the current threshold.
+            {% endif %}
+        </p>
+    </div>
+
+    <div class="images-section">
+        <div class="image-container">
+            <!-- Base64 Original Image -->
+            <img src="data:image/jpeg;base64,{{ original_image }}" alt="Original MRI Scan">
+            <p>Original MRI Scan</p>
+        </div>
+        
+        {% if is_tumor %}
+        <div class="image-container">
+            <!-- Base64 Grad-CAM Image -->
+            <img src="data:image/jpeg;base64,{{ gradcam_image }}" alt="Grad-CAM Heatmap">
+            <p>XAI Localization (Grad-CAM)</p>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if llm_analysis %}
+    <div style="margin-bottom: 30px;">
+        <h2 style="color: #1e3a8a; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px;">Comprehensive RAG AI Analysis</h2>
+        <div style="background-color: #f8fafc; padding: 15px; border-left: 4px solid #10b981; border-radius: 4px;">
+            <p style="white-space: pre-wrap; margin: 0; line-height: 1.6; font-size: 14px;">{{ llm_analysis }}</p>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if doctor_notes %}
+    <div style="margin-bottom: 30px;">
+        <h2 style="color: #1e3a8a; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px;">Physician's Notes</h2>
+        <div style="background-color: #f1f5f9; padding: 15px; border-left: 4px solid #3b82f6; border-radius: 4px;">
+            <p style="white-space: pre-wrap; margin: 0; line-height: 1.6; font-size: 14px;">{{ doctor_notes }}</p>
+        </div>
+    </div>
+    {% endif %}
+
+            <div class="footer">
+        <p>This report was automatically generated by NeuroScan (Track A) using a ResNet50 Convolutional Neural Network.</p>
+        <p><strong>Disclaimer:</strong> This tool is a diagnostic assistant and does not replace professional medical judgment.</p>
+    </div>
+
+</body>
+</html>
