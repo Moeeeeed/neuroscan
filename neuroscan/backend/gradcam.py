@@ -74,7 +74,8 @@ def get_tumor_location(heatmap):
     norm_x = (cx / w) * 2 - 1
     norm_y = -((cy / h) * 2 - 1) # Invert Y so top is positive
     
-    lr = "Image Right Hemisphere" if norm_x > 0 else "Image Left Hemisphere"
+    # Radiological convention: left side of image = patient's right hemisphere
+    lr = "Patient Left Hemisphere" if norm_x > 0 else "Patient Right Hemisphere"
     tb = "Anterior Region" if norm_y > 0 else "Posterior Region"
     
     if abs(norm_x) < 0.25 and abs(norm_y) < 0.25:
