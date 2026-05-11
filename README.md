@@ -30,6 +30,16 @@
 
 </div>
 
+> ⚠️ **IMPORTANT MEDICAL DISCLAIMER**
+>
+> **NeuroScan is a research and educational tool only. It is NOT a medical device and has NOT been cleared or approved by the FDA, EMA, or any other regulatory body.**
+>
+> - This software is provided **for diagnostic assistance and research purposes only**
+> - It **must not** be used as a sole basis for clinical decision-making
+> - All diagnoses should be verified by a qualified medical professional
+> - The developers assume **no liability** for any clinical decisions or patient outcomes resulting from the use of this software
+> - Always consult a licensed physician for medical advice
+
 ---
 
 ## 📋 Table of Contents
@@ -95,51 +105,50 @@ The system produces **AI-generated clinical PDF reports** via a RAG (Retrieval-A
 
 ## 🏗️ Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                        USER (Browser)                               │
-│  ┌───────────────────────────────────────────────────────────────┐  │
-│  │                   Next.js Frontend (:3000)                     │  │
-│  │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────────┐  │  │
-│  │  │  Home    │  │  Docs    │  │  About   │  │  Solutions   │  │  │
-│  │  │  Page    │  │  Page    │  │  Page    │  │  Page        │  │  │
-│  │  └────┬─────┘  └──────────┘  └──────────┘  └──────────────┘  │  │
-│  │       │                                                       │  │
-│  │  ┌────▼────────────────────────────────────────────────────┐  │  │
-│  │  │              Diagnostic Flow (Client-side)               │  │  │
-│  │  │  ┌──────────┐    ┌──────────┐    ┌──────────────────┐   │  │  │
-│  │  │  │ Patient  │───▶│  Image   │───▶│   Dashboard      │   │  │  │
-│  │  │  │  Form    │    │ Uploader │    │   (Results)      │   │  │  │
-│  │  │  └──────────┘    └──────────┘    └──────────────────┘   │  │  │
-│  │  └─────────────────────────────────────────────────────────┘  │  │
-│  └──────────────────────────────┬────────────────────────────────┘  │
-└─────────────────────────────────┼───────────────────────────────────┘
-                                  │  HTTP POST /predict
-                                  │  HTTP POST /generate-report
-                                  ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                    Flask Backend (:5000)                             │
-│                                                                     │
-│  ┌──────────────┐    ┌──────────────────┐    ┌──────────────────┐  │
-│  │  /predict    │───▶│  Preprocess      │───▶│  ResNet50 Model  │  │
-│  │  Endpoint    │    │  (OpenCV)        │    │  (TensorFlow)    │  │
-│  └──────────────┘    └──────────────────┘    └────────┬─────────┘  │
-│                                                       │             │
-│  ┌──────────────┐    ┌──────────────────┐             │             │
-│  │  /generate-  │◀───│  Grad-CAM        │◀────────────┘             │
-│  │  report      │    │  Heatmap Gen     │                           │
-│  └──────┬───────┘    └──────────────────┘                           │
-│         │                                                           │
-│         ▼                                                           │
-│  ┌──────────────────┐    ┌──────────────────┐                      │
-│  │  WeasyPrint PDF  │◀───│  Grok API (RAG)  │                      │
-│  │  Generator       │    │  LLM Analysis    │                      │
-│  └──────────────────┘    └──────────────────┘                      │
-│                                                                     │
-│  ┌──────────────────────────────────────────────────────────────┐   │
-│  │  Storage:  /uploads (temp), /reports (PDFs), /model (weights)│   │
-│  └──────────────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────────┘
+```mermaid
+graph TB
+    subgraph USER["🌐 User Browser"]
+        direction TB
+        subgraph FE["Next.js Frontend (:3000)"]
+            direction TB
+            PAGES["📄 Pages<br/>Home · Docs · About · Solutions · How-to-Use · Contact"]
+            DIAG["🔬 Diagnostic Flow"]
+            PF["📋 Patient Form"] --> IU["📤 Image Uploader"] --> DB["📊 Dashboard"]
+        end
+    end
+
+    FE -->|"POST /predict"| API_PRED
+    FE -->|"POST /generate-report"| API_REP
+
+    subgraph BE["⚙️ Flask Backend (:5000)"]
+        direction TB
+        API_PRED["/predict Endpoint"] --> PRE["🖼️ Preprocess<br/>OpenCV · Resize 224×224 · Normalize"]
+        PRE --> MODEL["🧠 ResNet50 Model<br/>TensorFlow / Keras"]
+        MODEL --> GC["🔥 Grad-CAM<br/>Heatmap Generator"]
+        GC --> API_REP["/generate-report Endpoint"]
+        API_REP --> PDF["📄 WeasyPrint<br/>PDF Generator"]
+        API_REP --> GROK["🤖 Grok API<br/>RAG Clinical Analysis"]
+    end
+
+    subgraph STORAGE["💾 Storage Layer"]
+        UPLOADS["📁 /uploads<br/>Temp Images"]
+        REPORTS["📁 /reports<br/>Generated PDFs"]
+        WEIGHTS["📁 /model<br/>model.weights.h5"]
+    end
+
+    PRE -.-> UPLOADS
+    PDF -.-> REPORTS
+    MODEL -.-> WEIGHTS
+
+    classDef frontend fill:#1a1a2e,stroke:#e94560,stroke-width:2px,color:#fff
+    classDef backend fill:#16213e,stroke:#0f3460,stroke-width:2px,color:#fff
+    classDef storage fill:#0f3460,stroke:#533483,stroke-width:2px,color:#fff
+    classDef diag fill:#533483,stroke:#e94560,stroke-width:1px,color:#fff
+
+    class FE,PAGES frontend
+    class BE,API_PRED,PRE,MODEL,GC,API_REP,PDF,GROK backend
+    class STORAGE,UPLOADS,REPORTS,WEIGHTS storage
+    class DIAG,PF,IU,DB diag
 ```
 
 ---
@@ -148,23 +157,46 @@ The system produces **AI-generated clinical PDF reports** via a RAG (Retrieval-A
 
 ### End-to-End Flow
 
-```
-┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐
-│  Patient │    │  Upload  │    │  Model   │    │  Grad-   │    │  PDF     │
-│  Details │───▶│  MRI     │───▶│  Infers  │───▶│  CAM     │───▶│  Report  │
-│  Entry   │    │  Image   │    │          │    │  Heatmap │    │  Export  │
-└──────────┘    └──────────┘    └──────────┘    └──────────┘    └──────────┘
-                                     │
-                                     ▼
-                            ┌──────────────────┐
-                            │  Classification  │
-                            │  ┌────────────┐  │
-                            │  │  Glioma    │  │
-                            │  │ Meningioma │  │
-                            │  │ No Tumor   │  │
-                            │  │ Pituitary  │  │
-                            │  └────────────┘  │
-                            └──────────────────┘
+```mermaid
+flowchart LR
+    A["🏥 Patient<br/>Details Entry"] --> B["📤 Upload<br/>MRI Image"]
+    B --> C["🧠 Model<br/>Inference"]
+    
+    C --> D{"🔍 Tumor<br/>Detected?"}
+    
+    D -->|"Yes"| E["🔥 Grad-CAM<br/>Heatmap"]
+    D -->|"No"| F["✅ No Tumor<br/>Result"]
+    
+    E --> G["🤖 Grok API<br/>RAG Analysis"]
+    G --> H["📄 Generate<br/>PDF Report"]
+    F --> H
+    
+    H --> I["📊 Dashboard<br/>Display"]
+    I --> J["🔗 Share<br/>Report Link"]
+
+    subgraph CLASSES["Classification Output"]
+        C1["Glioma"]
+        C2["Meningioma"]
+        C3["No Tumor"]
+        C4["Pituitary"]
+    end
+
+    C -.-> CLASSES
+
+    style A fill:#1a1a2e,stroke:#e94560,stroke-width:2px,color:#fff
+    style B fill:#1a1a2e,stroke:#e94560,stroke-width:2px,color:#fff
+    style C fill:#16213e,stroke:#0f3460,stroke-width:2px,color:#fff
+    style D fill:#533483,stroke:#e94560,stroke-width:2px,color:#fff
+    style E fill:#16213e,stroke:#0f3460,stroke-width:2px,color:#fff
+    style F fill:#0f3460,stroke:#00ff88,stroke-width:2px,color:#fff
+    style G fill:#16213e,stroke:#0f3460,stroke-width:2px,color:#fff
+    style H fill:#16213e,stroke:#0f3460,stroke-width:2px,color:#fff
+    style I fill:#1a1a2e,stroke:#e94560,stroke-width:2px,color:#fff
+    style J fill:#1a1a2e,stroke:#e94560,stroke-width:2px,color:#fff
+    style C1 fill:#533483,stroke:#e94560,stroke-width:1px,color:#fff
+    style C2 fill:#533483,stroke:#e94560,stroke-width:1px,color:#fff
+    style C3 fill:#533483,stroke:#e94560,stroke-width:1px,color:#fff
+    style C4 fill:#533483,stroke:#e94560,stroke-width:1px,color:#fff
 ```
 
 ### Detailed Business Logic
@@ -396,7 +428,31 @@ neuroscan/
 
 ## 📄 License
 
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
+
+```
+MIT License
+
+Copyright (c) 2026 NeuroScan Diagnostic Assistant
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
 
 ---
 
