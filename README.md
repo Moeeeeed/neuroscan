@@ -84,12 +84,12 @@ The system produces **AI-generated clinical PDF reports** via a RAG (Retrieval-A
 
 | Component | Detail |
 |-----------|--------|
-| **Base Architecture** | ResNet50 (pre-trained on ImageNet) |
+| **Base Architecture** | ResNet50 (custom-trained from scratch on our dataset) |
 | **Input Shape** | 224 × 224 × 3 |
 | **Top Layers** | GAP → Dense(256, ReLU) → Dropout(0.5) → Dense(4, Softmax) |
 | **Classes** | Glioma, Meningioma, No Tumor, Pituitary Tumor |
 | **Explainability** | Grad-CAM (conv5_block3_out layer) |
-| **Weights** | 180 MB (`model.weights.h5`) |
+| **Weights** | 180 MB (`model.weights.h5`) — trained from scratch in Jupyter Notebook |
 
 ---
 
@@ -180,7 +180,7 @@ The system produces **AI-generated clinical PDF reports** via a RAG (Retrieval-A
 
 #### 3. 🧠 Model Inference (`POST /predict`)
 - Image is preprocessed: decoded via OpenCV → BGR to RGB → resized to 224×224 → normalized (÷255)
-- ResNet50 model runs inference → outputs softmax probabilities over 4 classes
+- Custom-trained ResNet50 model runs inference → outputs softmax probabilities over 4 classes
 - **Prediction logic:**
   - If max probability > threshold → predicted class
   - Confidence score = max probability × 100
@@ -222,7 +222,7 @@ The system produces **AI-generated clinical PDF reports** via a RAG (Retrieval-A
 
 | Feature | Description |
 |---------|-------------|
-| 🧠 **Deep Learning Engine** | ResNet50 classifier with 95%+ accuracy across 4 diagnostic classes |
+| 🧠 **Deep Learning Engine** | Custom-trained ResNet50 classifier with 95%+ accuracy across 4 diagnostic classes |
 | 🔥 **Grad-CAM Visualization** | Explainable AI heatmaps highlighting tumor regions |
 | 📄 **AI-Generated Reports** | Automated PDF reports with clinical analysis via Grok API |
 | 🛡️ **HIPAA-Ready Design** | Privacy-first architecture with secure report sharing |
@@ -240,6 +240,22 @@ The system produces **AI-generated clinical PDF reports** via a RAG (Retrieval-A
 - Python 3.11+
 - Node.js 18+
 - pip / npm
+
+### Model Training (Optional — weights already provided)
+
+The model was trained from scratch using our custom Jupyter notebook pipeline:
+
+```bash
+# Train the model yourself
+jupyter notebook modeltrainig.ipynb
+```
+
+The training notebook covers:
+- Dataset loading & preprocessing
+- ResNet50 architecture definition (from scratch, no pre-trained weights)
+- Training loop with validation
+- Model evaluation & confusion matrix
+- Weight export to `model.weights.h5`
 
 ### Backend Setup
 
