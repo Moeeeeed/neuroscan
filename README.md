@@ -3,7 +3,7 @@
   <img src="https://img.shields.io/badge/NeuroScan-AI-blueviolet?style=for-the-badge&logo=openai&logoColor=white" alt="NeuroScan AI"/>
   <br/><br/>
 
-  # 🧠 NeuroScan AI — Brain Tumor MRI Classification
+  # NeuroScan AI — Brain Tumor MRI Classification
 
   **Explainable Deep Learning for Brain Tumor Diagnostics**
 
