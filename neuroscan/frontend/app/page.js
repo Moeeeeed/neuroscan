@@ -12,17 +12,22 @@ import {
   Activity,
   ChevronDown,
 } from "lucide-react";
+
 import PatientForm from "../components/PatientForm";
+
 import ImageUploader from "../components/ImageUploader";
+
 import Dashboard from "../components/Dashboard";
 
 /* ── Animation helpers ── */
+
 const fadeUp = {
   initial: { opacity: 0, y: 40 },
   whileInView: { opacity: 1, y: 0 },
   viewport: { once: true, margin: "-80px" },
   transition: { duration: 0.7, ease: "easeOut" },
 };
+
 
 const stagger = {
   initial: { opacity: 0, y: 30 },
@@ -31,6 +36,7 @@ const stagger = {
   transition: { duration: 0.5, ease: "easeOut" },
 };
 
+
 /* ── Feature cards data ── */
 const features = [
   {
@@ -38,45 +44,53 @@ const features = [
     title: "Deep Learning Engine",
     desc: "ResNet50-based classifier trained on thousands of MRI scans with 95%+ accuracy across four diagnostic classes.",
   },
+
   {
     icon: <Activity size={28} />,
     title: "Grad-CAM Visualization",
     desc: "Explainable AI heatmaps that highlight tumor regions, giving clinicians visual evidence for every prediction.",
   },
+
   {
     icon: <FileText size={28} />,
     title: "AI-Generated Reports",
     desc: "Automated PDF reports with patient details, diagnosis, confidence scores, and clinical notes — ready to share.",
   },
+
   {
     icon: <Shield size={28} />,
     title: "HIPAA-Ready Design",
     desc: "Built with privacy-first architecture. All data processed locally with secure report generation and sharing.",
   },
+
   {
     icon: <Zap size={28} />,
     title: "Real-Time Inference",
     desc: "Sub-second predictions on GPU-accelerated infrastructure. Upload an MRI and get results instantly.",
   },
+
   {
     icon: <Stethoscope size={28} />,
     title: "Clinical Workflow",
     desc: "Designed for radiologists and neurologists. Simple three-step flow: patient info → upload → diagnosis.",
   },
+
 ];
 
-/* ── Steps data ── */
+/* ─ Steps data ─ */
+
 const steps = [
   { num: "01", title: "Enter Patient Details", desc: "Fill in patient name, age, and relevant history." },
   { num: "02", title: "Upload MRI Scan", desc: "Drag & drop or select a brain MRI image (JPG/PNG)." },
   { num: "03", title: "Get Instant Diagnosis", desc: "Receive classification, Grad-CAM heatmap, and AI report." },
 ];
 
+
+
 export default function Home() {
   const [step, setStep] = useState("splash");
   const [patientDetails, setPatientDetails] = useState(null);
   const [uploadResult, setUploadResult] = useState(null);
-
   useEffect(() => {
     if (step === "splash") {
       const timer = setTimeout(() => setStep("landing"), 3500);
@@ -84,6 +98,7 @@ export default function Home() {
     }
   }, [step]);
 
+  
   /* ── Splash Screen ── */
   if (step === "splash") {
     return (
@@ -345,6 +360,7 @@ export default function Home() {
 
       <motion.div
         key={step}
+
         initial={{ opacity: 0, x: 30 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.4 }}
