@@ -1,5 +1,5 @@
 "use client";
-
+// Main diagnostic dashboard: manages MRI uploads, model predictions, and AI report generation
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
