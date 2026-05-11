@@ -3,7 +3,7 @@ import uuid
 import base64
 from datetime import datetime
 from io import BytesIO
-
+# Flask server entry point: Handles MRI uploads and ResNet50 model inference
 from flask import Flask, request, jsonify, send_file, render_template_string
 from flask_cors import CORS
 import numpy as np
